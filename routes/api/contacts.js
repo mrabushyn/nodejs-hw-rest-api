@@ -1,25 +1,35 @@
-const express = require('express')
+const express = require("express");
 
-const router = express.Router()
+const contactsRouter = express.Router();
 
-router.get('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+const contactsDB = require("../../models/contacts.json");
 
-router.get('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+contactsRouter.get("/", async (req, res, next) => {
+    res.json(contactsDB);
+});
 
-router.post('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+contactsRouter.get("/:contactId", async (req, res, next) => {
+    res.json(contactsDB);
+});
 
-router.delete('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+contactsRouter.post("/", async (req, res, next) => {
+    const newContact = {
+        id: "11",
+        name: "newContact",
+        email: "newContact@egetlacus.ca",
+        phone: "(294) 5555555555",
+    };
+    contactsDB.push(newContact);
 
-router.put('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+    res.status(201).json(newContact);
+});
 
-module.exports = router
+contactsRouter.delete("/:contactId", async (req, res, next) => {
+    res.json(contactsDB);
+});
+
+contactsRouter.put("/:contactId", async (req, res, next) => {
+    res.json(contactsDB);
+});
+
+module.exports = contactsRouter;
