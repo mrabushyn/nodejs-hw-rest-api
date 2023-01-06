@@ -3,13 +3,16 @@ const express = require("express");
 const contactsRouter = express.Router();
 
 const contactsDB = require("../../models/contacts.json");
+// const  tryCatchWrapper  = require("../../helpers");
 
 contactsRouter.get("/", async (req, res, next) => {
     res.json(contactsDB);
 });
 
 contactsRouter.get("/:contactId", async (req, res, next) => {
-    res.json(contactsDB);
+const {contactId} = req.params
+const contact = contactsDB.find((contact) => (contact.id === contactId));
+    res.json(contact);
 });
 
 contactsRouter.post("/", async (req, res, next) => {
@@ -31,5 +34,12 @@ contactsRouter.delete("/:contactId", async (req, res, next) => {
 contactsRouter.put("/:contactId", async (req, res, next) => {
     res.json(contactsDB);
 });
+
+// contactsRouter.get(
+//     "/api/error",
+//     tryCatchWrapper(async (req, res, next) => {
+//         throw new Error("Something happened. It's not good.");
+//     })
+// );
 
 module.exports = contactsRouter;
