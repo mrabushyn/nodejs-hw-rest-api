@@ -2,38 +2,40 @@ const express = require("express");
 
 const contactsRouter = express.Router();
 
-const contactsDB = require("../../models/contacts.json");
+const contactsDB = require("../../models/contacts.js");
 // const  tryCatchWrapper  = require("../../helpers");
 
-contactsRouter.get("/", async (req, res, next) => {
-    res.json(contactsDB);
+contactsRouter.get("/", async (req, res) => {
+    const contacts = await contactsDB.listContacts();
+    res.json(contacts);
 });
 
 contactsRouter.get("/:contactId", async (req, res, next) => {
-const {contactId} = req.params
-const contact = contactsDB.find((contact) => (contact.id === contactId));
-    res.json(contact);
+    const { contactId } = req.params;
+    const contact = await contactsDB.getById(contactId);
+    if (!contact) {
+        return res.status(404).json({ message: "Not found" });
+    }
+    return res.json(contact);
 });
 
 contactsRouter.post("/", async (req, res, next) => {
-    const newContact = {
-        id: "11",
-        name: "newContact",
-        email: "newContact@egetlacus.ca",
-        phone: "(294) 5555555555",
-    };
-    contactsDB.push(newContact);
+    const { name, email, phone } = req.body;
 
-    res.status(201).json(newContact);
+    if (!name || !email || !phone) {
+        return res.status(400).json({ message: "missing required name field" });
+    }
+    const newContact = await contactsDB.addContact(name, email, phone);
+    return res.status(201).json(newContact);
 });
 
-contactsRouter.delete("/:contactId", async (req, res, next) => {
-    res.json(contactsDB);
-});
+// contactsRouter.delete("/:contactId", async (req, res, next) => {
+//     res.json(contactsDB);
+// });
 
-contactsRouter.put("/:contactId", async (req, res, next) => {
-    res.json(contactsDB);
-});
+// contactsRouter.put("/:contactId", async (req, res, next) => {
+//     res.json(contactsDB);
+// });
 
 // contactsRouter.get(
 //     "/api/error",

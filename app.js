@@ -18,7 +18,7 @@ app.get("/api/error", async (req, res, next) => {
     try {
         throw new Error("Something happened. It's not good.");
     } catch (error) {
-        next(error)
+        next(error);
     }
 });
 
