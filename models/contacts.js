@@ -44,11 +44,9 @@ const removeContact = async (contactId) => {
     await writeDB(updatedDb);
 };
 
-const updateContact = async (contactId, name, email, phone) => {
-    const id = contactId;
+const updateContact = async (contact) => {
     const contactsDB = await readDb();
-    const contact = { id, name, email, phone };
-    const updatedDb = contactsDB.filter((contact) => contact.id !== contactId);
+    const updatedDb = contactsDB.filter((c) => c.id !== contact.id);
     updatedDb.push(contact);
     await writeDB(updatedDb);
     return contact;
