@@ -1,5 +1,5 @@
 const contactsDB = require("../models/contacts");
-// const  {tryCatchWrapper}  = require("../../helpers/index");
+const { HttpError } = require("../helpers/index");
 // const Joi = require("joi")
 
 async function getContacts(req, res) {
@@ -12,7 +12,7 @@ async function getContact(req, res, next) {
     const { contactId } = req.params;
     const contact = await contactsDB.getById(contactId);
     if (!contact) {
-        return res.status(404).json({ message: "Not found" });
+        return next(HttpError(404, "contact not found"));
     }
     return res.json(contact);
 }
@@ -21,7 +21,7 @@ async function createContact(req, res, next) {
     const { name, email, phone } = req.body;
 
     if (!name || !email || !phone) {
-        return res.status(400).json({ message: "missing required name field" });
+        return next(HttpError(400, "missing required name field"));
     }
     const newContact = await contactsDB.addContact(name, email, phone);
     return res.status(201).json(newContact);
@@ -31,29 +31,25 @@ async function delContact(req, res, next) {
     const { contactId } = req.params;
     const contact = await contactsDB.getById(contactId);
     if (!contact) {
-        return res.status(404).json({ message: "No contact" });
+        return next(HttpError(404, "contact not found"));
     }
     await contactsDB.removeContact(contactId);
-    res.status(200).json({ message: "contact deleted" });
+    return res.status(200).json({ message: "contact deleted" });
 }
 
 async function changeContact(req, res, next) {
     const { contactId } = req.params;
     const { name, email, phone } = req.body;
-    const contact = await contactsDB.getById(contactId);
-    if (!contact) {
-        return res.status(404).json({ message: "No contact" });
-    }
-    await contactsDB.updateContact(contactId, name, email, phone);
-    res.status(200).json(contact);
-}
+    const id = contactId;
+    const contact = { id, name, email, phone };
 
-// contactsRouter.get(
-//     "/api/error",
-//     tryCatchWrapper(async (req, res, next) => {
-//         throw new Error("Something happened. It's not good.");
-//     })
-// );
+    if (!contact) {
+        return next(HttpError(404, "contact not found"));
+    }
+
+    await contactsDB.updateContact(contactId, name, email, phone);
+    return res.status(200).json(contact);
+}
 
 module.exports = {
     getContacts,

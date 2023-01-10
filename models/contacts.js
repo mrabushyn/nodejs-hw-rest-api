@@ -14,9 +14,9 @@ async function writeDB(contactsDB) {
     await fs.writeFile(contactsDBPath, JSON.stringify(contactsDB, null, 2));
 }
 
-async function appendDB(contactsDB) {
-    await fs.appendFile(contactsDBPath, JSON.stringify(contactsDB, null, 2));
-}
+// async function appendDB(contactsDB) {
+//     await fs.appendFile(contactsDBPath, JSON.stringify(contactsDB, null, 2));
+// }
 
 const listContacts = async ({ limit = 0 }) => {
     const contactsDB = await readDb();
@@ -45,11 +45,13 @@ const removeContact = async (contactId) => {
 };
 
 const updateContact = async (contactId, name, email, phone) => {
+    const id = contactId;
     const contactsDB = await readDb();
-    const contact = { contactId, name, email, phone };
-    // const contact = contactsDB.find((contact) => contact.id === contactId);
-    const updatedDb = contactsDB.push(contact);
-    await appendDB(updatedDb);
+    const contact = { id, name, email, phone };
+    const updatedDb = contactsDB.filter((contact) => contact.id !== contactId);
+    updatedDb.push(contact);
+    await writeDB(updatedDb);
+    return contact;
 };
 
 module.exports = {
