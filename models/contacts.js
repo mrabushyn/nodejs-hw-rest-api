@@ -14,9 +14,13 @@ async function writeDB(contactsDB) {
     await fs.writeFile(contactsDBPath, JSON.stringify(contactsDB, null, 2));
 }
 
-const listContacts = async () => {
+async function appendDB(contactsDB) {
+    await fs.appendFile(contactsDBPath, JSON.stringify(contactsDB, null, 2));
+}
+
+const listContacts = async ({ limit = 0 }) => {
     const contactsDB = await readDb();
-    return contactsDB.slice();
+    return contactsDB.slice(-limit);
 };
 
 const getById = async (contactId) => {
@@ -34,9 +38,19 @@ const addContact = async (name, email, phone) => {
     return contact;
 };
 
-const removeContact = async (contactId) => {};
+const removeContact = async (contactId) => {
+    const contactsDB = await readDb();
+    const updatedDb = contactsDB.filter((contact) => contact.id !== contactId);
+    await writeDB(updatedDb);
+};
 
-const updateContact = async (contactId, body) => {};
+const updateContact = async (contactId, name, email, phone) => {
+    const contactsDB = await readDb();
+    const contact = { contactId, name, email, phone };
+    // const contact = contactsDB.find((contact) => contact.id === contactId);
+    const updatedDb = contactsDB.push(contact);
+    await appendDB(updatedDb);
+};
 
 module.exports = {
     listContacts,

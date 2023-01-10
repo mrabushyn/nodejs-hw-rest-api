@@ -3,7 +3,7 @@ const logger = require("morgan");
 const cors = require("cors");
 
 const contactsRouter = require("./routes/api/contacts");
-// const {tryCatchWrapper} = require("./helpers/index");
+const { tryCatchWrapper } = require("../nodejs-hw-rest-api/helpers/index");
 
 const app = express();
 
@@ -13,21 +13,12 @@ app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
 
-app.get("/api/error", async (req, res, next) => {
-    // some logic...
-    try {
+app.get(
+    "/api/error",
+    tryCatchWrapper(async (req, res, next) => {
         throw new Error("Something happened. It's not good.");
-    } catch (error) {
-        next(error);
-    }
-});
-
-// app.get(
-//     "/api/error3",
-//     tryCatchWrapper(async (req, res, next) => {
-//         throw new Error("Something happened. It's not good.");
-//     })
-// );
+    })
+);
 
 app.use("/api/contacts", contactsRouter);
 
