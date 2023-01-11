@@ -2,8 +2,7 @@ const contactsDB = require("../models/contacts");
 const { HttpError } = require("../helpers/index");
 
 async function getContacts(req, res) {
-    const { limit } = req.query;
-    const contacts = await contactsDB.listContacts({ limit });
+    const contacts = await contactsDB.listContacts();
     res.json(contacts);
 }
 
@@ -11,7 +10,7 @@ async function getContact(req, res, next) {
     const { contactId } = req.params;
     const contact = await contactsDB.getById(contactId);
     if (!contact) {
-        return next(HttpError(404, "contact not found"));
+        return next(new HttpError(404, "contact not found"));
     }
     return res.json(contact);
 }
@@ -27,7 +26,7 @@ async function delContact(req, res, next) {
 
     const contact = await contactsDB.getById(contactId);
     if (!contact) {
-        return next(HttpError(404, "contact not found"));
+        return next(new HttpError(404, "contact not found"));
     }
 
     await contactsDB.removeContact(contactId);
@@ -42,7 +41,7 @@ async function changeContact(req, res, next) {
 
     const trueContact = await contactsDB.getById(contactId);
     if (!trueContact) {
-        return next(HttpError(404, "contact not found"));
+        return next(new HttpError(404, "contact not found"));
     }
 
     await contactsDB.updateContact(contact);

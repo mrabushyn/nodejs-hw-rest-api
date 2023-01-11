@@ -14,9 +14,9 @@ async function writeDB(contactsDB) {
     await fs.writeFile(contactsDBPath, JSON.stringify(contactsDB, null, 2));
 }
 
-const listContacts = async ({ limit = 0 }) => {
+const listContacts = async () => {
     const contactsDB = await readDb();
-    return contactsDB.slice(-limit);
+    return contactsDB.slice();
 };
 
 const getById = async (contactId) => {
