@@ -1,6 +1,6 @@
 const fs = require("fs/promises");
 const path = require("path");
-const { nanoid } = require("nanoid"); // v4 won't work in CommonJS
+const { nanoid } = require("nanoid");
 
 const contactsDBPath = path.resolve(__dirname, "contacts.json");
 
@@ -13,10 +13,6 @@ async function readDb() {
 async function writeDB(contactsDB) {
     await fs.writeFile(contactsDBPath, JSON.stringify(contactsDB, null, 2));
 }
-
-// async function appendDB(contactsDB) {
-//     await fs.appendFile(contactsDBPath, JSON.stringify(contactsDB, null, 2));
-// }
 
 const listContacts = async ({ limit = 0 }) => {
     const contactsDB = await readDb();
@@ -46,10 +42,9 @@ const removeContact = async (contactId) => {
 
 const updateContact = async (contact) => {
     const contactsDB = await readDb();
-    const updatedDb = contactsDB.filter((c) => c.id !== contact.id);
+    const updatedDb = contactsDB.filter((item) => item.id !== contact.id);
     updatedDb.push(contact);
     await writeDB(updatedDb);
-    return contact;
 };
 
 module.exports = {

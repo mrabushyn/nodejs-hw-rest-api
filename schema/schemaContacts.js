@@ -5,4 +5,11 @@ const Joi = require("joi");
         email: Joi.string().min(10).required(),
         phone: Joi.number().min(8).required(),
     });
-module.exports =  addContactSchema ;
+
+    const updateContactSchema = Joi.object({
+        name: Joi.string().min(2).required(),
+        email: Joi.string().min(10).required(),
+        phone: Joi.number().min(8).required(),
+    });
+
+module.exports = { addContactSchema, updateContactSchema };
