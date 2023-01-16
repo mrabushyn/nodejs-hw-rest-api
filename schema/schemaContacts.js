@@ -1,15 +1,23 @@
 const Joi = require("joi");
 
-    const addContactSchema = Joi.object({
-        name: Joi.string().min(2).required(),
-        email: Joi.string().min(10).required(),
-        phone: Joi.string().min(8).required(),
-    });
+const addContactSchema = Joi.object({
+    name: Joi.string().min(2).required(),
+    email: Joi.string().min(10).required(),
+    phone: Joi.string().min(8).required(),
+    favorite: Joi.boolean(),
+});
 
-    const updateContactSchema = Joi.object({
-        name: Joi.string().min(2).required(),
-        email: Joi.string().min(10).required(),
-        phone: Joi.string().min(8).required(),
-    });
+const updateContactSchema = Joi.object({
+    name: Joi.string().min(2).required(),
+    email: Joi.string().min(10).required(),
+    phone: Joi.string().min(8).required(),
+    favorite: Joi.boolean(),
+});
+const updateStatusSchema = Joi.object({
+    name: Joi.string().min(2),
+    email: Joi.string().min(10),
+    phone: Joi.string().min(8),
+    favorite: Joi.boolean().required(),
+});
 
-module.exports = { addContactSchema, updateContactSchema };
+module.exports = { addContactSchema, updateContactSchema, updateStatusSchema };

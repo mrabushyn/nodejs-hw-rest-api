@@ -18,7 +18,12 @@ async function getContact(req, res, next) {
 
 async function createContact(req, res, next) {
     const { name, email, phone, favorite } = req.body;
-    const newContact = await Contacts.create({ name, email, phone, favorite });
+    const newContact = await Contacts.create({
+        name,
+        email,
+        phone,
+        favorite,
+    });
     return res.status(201).json(newContact);
 }
 
@@ -45,17 +50,33 @@ async function changeContact(req, res, next) {
         return next(new HttpError(404, "contact not found"));
     }
 
-    await Contacts.findByIdAndUpdate(
-        { _id: contactId },
-        { name, email, phone, favorite },
-        { new: true }
-    );
+    await Contacts.findByIdAndUpdate({ _id: contactId }, contact, {
+        new: true,
+    });
+    return res.status(200).json(contact);
+}
+
+async function updateStatusContact(req, res, next) {
+    const { contactId } = req.params;
+    const { name, email, phone, favorite } = req.body;
+    const id = contactId;
+    const contact = { id, name, email, phone, favorite };
+
+    const trueContact = await Contacts.findById(contactId);
+    if (!trueContact) {
+        return next(new HttpError(404, "contact not found"));
+    }
+
+    await Contacts.findByIdAndUpdate({ _id: contactId }, contact, {
+        new: true,
+    });
     return res.status(200).json(contact);
 }
 
 module.exports = {
     getContacts,
     getContact,
+    updateStatusContact,
     createContact,
     delContact,
     changeContact,
