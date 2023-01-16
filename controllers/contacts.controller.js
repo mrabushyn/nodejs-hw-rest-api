@@ -1,5 +1,5 @@
 // const contactsDB = require("../models/contacts");
-const {Contacts} = require("../models/contactsMongoDb");
+const { Contacts } = require("../models/contactsMongoDb");
 const { HttpError } = require("../helpers/index");
 
 async function getContacts(req, res) {
@@ -18,7 +18,7 @@ async function getContact(req, res, next) {
 
 async function createContact(req, res, next) {
     const { name, email, phone, favorite } = req.body;
-    const newContact = await Contacts.create(name, email, phone, favorite);
+    const newContact = await Contacts.create({ name, email, phone, favorite });
     return res.status(201).json(newContact);
 }
 
@@ -45,7 +45,11 @@ async function changeContact(req, res, next) {
         return next(new HttpError(404, "contact not found"));
     }
 
-    await Contacts.findByIdAndUpdate(contact);
+    await Contacts.findByIdAndUpdate(
+        { _id: contactId },
+        { name, email, phone, favorite },
+        { new: true }
+    );
     return res.status(200).json(contact);
 }
 
