@@ -52,7 +52,9 @@ async function changeContact(req, res, next) {
     await Contacts.findByIdAndUpdate({ _id: contactId }, contact, {
         new: true,
     });
-    return res.status(200).json(contact);
+    const updatedContact = await Contacts.findById(contactId);
+
+    return res.status(200).json(updatedContact);
 }
 
 async function updateStatusContact(req, res, next) {
