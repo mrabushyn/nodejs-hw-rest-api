@@ -13,10 +13,8 @@ const updateContactSchema = Joi.object({
     phone: Joi.string().min(8).required(),
     favorite: Joi.boolean(),
 });
+
 const updateStatusSchema = Joi.object({
-    name: Joi.string().min(2),
-    email: Joi.string().min(10),
-    phone: Joi.string().min(8),
     favorite: Joi.boolean().required(),
 });
 

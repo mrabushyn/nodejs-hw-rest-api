@@ -62,16 +62,15 @@ async function updateStatusContact(req, res, next) {
         return next(new HttpError(404, "contact not found"));
     }
 
-    const { name, email, phone, favorite } = req.body;
-    const id = contactId;
-    const contact = { id, name, email, phone, favorite };
+    const { favorite } = req.body;
+    await Contacts.findByIdAndUpdate(
+        { _id: contactId },
+        { favorite },
+        { new: true }
+    );
+    const updatedContact = await Contacts.findById(contactId);
 
-
-
-    await Contacts.findByIdAndUpdate({ _id: contactId }, contact, {
-        new: true,
-    });
-    return res.status(200).json(contact);
+    return res.status(200).json(updatedContact);
 }
 
 module.exports = {
