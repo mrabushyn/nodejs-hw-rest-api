@@ -41,15 +41,14 @@ async function delContact(req, res, next) {
 
 async function changeContact(req, res, next) {
     const { contactId } = req.params;
-    const { name, email, phone, favorite } = req.body;
-    const id = contactId;
-    const contact = { id, name, email, phone, favorite };
-
     const trueContact = await Contacts.findById(contactId);
     if (!trueContact) {
         return next(new HttpError(404, "contact not found"));
     }
 
+    const { name, email, phone, favorite } = req.body;
+    const id = contactId;
+    const contact = { id, name, email, phone, favorite };
     await Contacts.findByIdAndUpdate({ _id: contactId }, contact, {
         new: true,
     });
@@ -58,14 +57,16 @@ async function changeContact(req, res, next) {
 
 async function updateStatusContact(req, res, next) {
     const { contactId } = req.params;
-    const { name, email, phone, favorite } = req.body;
-    const id = contactId;
-    const contact = { id, name, email, phone, favorite };
-
     const trueContact = await Contacts.findById(contactId);
     if (!trueContact) {
         return next(new HttpError(404, "contact not found"));
     }
+
+    const { name, email, phone, favorite } = req.body;
+    const id = contactId;
+    const contact = { id, name, email, phone, favorite };
+
+
 
     await Contacts.findByIdAndUpdate({ _id: contactId }, contact, {
         new: true,
