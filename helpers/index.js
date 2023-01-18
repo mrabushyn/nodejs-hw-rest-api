@@ -19,12 +19,11 @@ class HttpError extends Error {
         super(message);
         this.err = new Error(message);
         this.err.status = status;
-        return this.err
-    }}
-
+        return this.err;
+    }
+}
 
 module.exports = {
     tryCatchWrapper,
-    HttpError
-
+    HttpError,
 };
