@@ -21,6 +21,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
+    console.error("Handling errors:", err.message );
     if (err.message.includes("Cast to ObjectId failed for value")) {
         return res.status(400).json({
             message: "id is invalid"
