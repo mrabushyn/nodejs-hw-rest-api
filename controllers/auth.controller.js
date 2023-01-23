@@ -1,5 +1,9 @@
 const { User } = require("../models/userMongoDb");
 const { HttpError } = require("../helpers/index");
+const jwt = require("jsonwebtoken")
+
+// const { JWT_SECRET } = process.env;
+
 const bcrypt = require("bcrypt");
 
 async function register(req, res, next) {
@@ -52,12 +56,17 @@ async function login(req, res, next) {
         throw new HttpError(401, "password is not valid");
     }
 
+    // console.log("JWT_SECRET", process.env.JWT_SECRET);
+
+    const token = jwt.sign({ id: storedUser._id }, process.env.JWT_SECRET, {expiresIn: "5h"});
+
     return res.status(200).json({
         data: {
-            token: "<TOKEN>",
+            token,
         },
     });
 }
+
 module.exports = {
     register,
     login,

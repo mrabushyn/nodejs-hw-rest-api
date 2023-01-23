@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const contactsSchema = mongoose.Schema(
     {
         name: {
@@ -23,8 +22,8 @@ const contactsSchema = mongoose.Schema(
             default: false,
         },
         owner: {
-            // type: SchemaTypes.ObjectId,
-            // ref: "user",
+            type: [mongoose.Types.ObjectId],
+            ref: "user",
         },
     },
     {

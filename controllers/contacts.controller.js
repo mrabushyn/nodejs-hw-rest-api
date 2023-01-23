@@ -3,8 +3,10 @@ const { Contacts } = require("../models/contactsMongoDb");
 const { HttpError } = require("../helpers/index");
 
 async function getContacts(req, res) {
-    const contacts = await Contacts.find({});
-    res.json(contacts);
+    const { limit=20, page=1 } = req.query;
+    const skip = (page - 1) * limit
+    const contacts = await Contacts.skip(skip).limit(limit)
+    return res.json(contacts);
 }
 
 async function getContact(req, res, next) {
@@ -74,6 +76,20 @@ async function updateStatusContact(req, res, next) {
 
     return res.status(200).json(updatedContact);
 }
+
+// async function createContact(req, res, next) {
+//     const { user } = req;
+//     const { id: contactId } = req.body;
+
+//     user.contacts.push(contactId);
+//     await User.findByIdAndUpdate(user._id, user);
+//     return res.status(201).json({
+//         data: {
+//             contacts: user.contacts,
+//         },
+//     });
+// }
+
 
 module.exports = {
     getContacts,

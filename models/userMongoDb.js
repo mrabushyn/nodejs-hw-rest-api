@@ -18,6 +18,12 @@ const userSchema = mongoose.Schema(
             enum: ["starter", "pro", "business"],
             default: "starter",
         },
+        contacts: [
+        { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "contact",
+        },
+    ],
         token: String,
     },
     {
