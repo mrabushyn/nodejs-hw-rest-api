@@ -5,7 +5,7 @@ const { User } = require("../models/userMongoDb");
 async function createContact(req, res, next) {
     const {user} =req
     const {id: contactId} = req.body
-
+console.log(user);
     user.contacts.push(contactId);
     await User.findByIdAndUpdate(user._id, user)
     return res.status(201).json({ data: {

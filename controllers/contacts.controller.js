@@ -3,9 +3,9 @@ const { Contacts } = require("../models/contactsMongoDb");
 const { HttpError } = require("../helpers/index");
 
 async function getContacts(req, res) {
-    const { limit=20, page=1 } = req.query;
-    const skip = (page - 1) * limit
-    const contacts = await Contacts.skip(skip).limit(limit)
+    const { limit = 20, page = 1 } = req.query;
+    const skip = (page - 1) * limit;
+    const contacts = await Contacts.find({}).skip(skip).limit(limit);
     return res.json(contacts);
 }
 
@@ -89,7 +89,6 @@ async function updateStatusContact(req, res, next) {
 //         },
 //     });
 // }
-
 
 module.exports = {
     getContacts,
