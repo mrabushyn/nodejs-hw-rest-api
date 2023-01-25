@@ -5,8 +5,11 @@ const { HttpError } = require("../helpers/index");
 async function getContacts(req, res) {
     const { limit = 20, page = 1 } = req.query;
     const skip = (page - 1) * limit;
-    const contacts = await Contacts.find({}).skip(skip).limit(limit);
-    return res.json(contacts);
+    const myContacts = await Contacts.find()
+        // .populate("owner", { _id: 1, name: 1 })
+        .skip(skip)
+        .limit(limit);
+    return res.json(myContacts);
 }
 
 async function getContact(req, res, next) {
@@ -16,17 +19,6 @@ async function getContact(req, res, next) {
         return next(new HttpError(404, "contact not found"));
     }
     return res.json(contact);
-}
-
-async function createContact(req, res, next) {
-    const { name, email, phone, favorite } = req.body;
-    const newContact = await Contacts.create({
-        name,
-        email,
-        phone,
-        favorite,
-    });
-    return res.status(201).json(newContact);
 }
 
 async function delContact(req, res, next) {
@@ -77,24 +69,10 @@ async function updateStatusContact(req, res, next) {
     return res.status(200).json(updatedContact);
 }
 
-// async function createContact(req, res, next) {
-//     const { user } = req;
-//     const { id: contactId } = req.body;
-
-//     user.contacts.push(contactId);
-//     await User.findByIdAndUpdate(user._id, user);
-//     return res.status(201).json({
-//         data: {
-//             contacts: user.contacts,
-//         },
-//     });
-// }
-
 module.exports = {
     getContacts,
     getContact,
     updateStatusContact,
-    createContact,
     delContact,
     changeContact,
 };

@@ -22,7 +22,7 @@ const contactsSchema = mongoose.Schema(
             default: false,
         },
         owner: {
-            type: [mongoose.Types.ObjectId],
+            type: mongoose.Schema.Types.ObjectId,
             ref: "user",
         },
     },
