@@ -35,28 +35,22 @@ async function register(req, res, next) {
 
 async function login(req, res, next) {
     const { email, password } = req.body;
-
     const storedUser = await User.findOne({
         email,
     });
-
     if (!storedUser) {
         throw new HttpError(401, "Email or password is wrong");
     }
     // if (!password) {
     //     throw new HttpError(400, "password is require");
     // }
-
     const isPasswordValid = await bcrypt.compare(password, storedUser.password);
-
     if (!isPasswordValid) {
         throw new HttpError(401, "Email or password is wrong");
     }
-
     const token = jwt.sign({ id: storedUser._id }, JWT_SECRET, {
         expiresIn: "5h",
     });
-
     return res.status(200).json({
         data: {
             token,
@@ -66,6 +60,21 @@ async function login(req, res, next) {
             },
         },
     });
+}
+
+async function logout(req, res, next) {
+    const { user } = req;
+    const storedUser = await User.findById(user._id);
+    if (!storedUser) {
+        throw new HttpError(401, "Not authorized");
+    }
+    req.headers.authorization = "";
+    //     let authHeaders = req.headers.authorization;
+    //     if (authHeaders === "") {
+    //         throw new HttpError(401, "Not authorized");
+    //     }
+    // authHeaders = ""
+    return res.status(204).json({});
 }
 
 async function createContact(req, res, next) {
@@ -81,26 +90,94 @@ async function createContact(req, res, next) {
     return res.status(201).json(newContact);
 }
 
+// async function getCurrentUserContacts(req, res, next) {
+//     const { limit = 20, page = 1 } = req.query;
+//     const { user } = req;
+//     const skip = (page - 1) * limit;
+//     const myContacts = await Contacts.find({ owner: user._id })
+//         .populate("owner", { _id: 1, name: 1 })
+//         .skip(skip)
+//         .limit(limit);
+//     return res.json(myContacts);
+// }
+
 async function getCurrentUserContacts(req, res, next) {
-    const { limit = 20, page = 1 } = req.query;
     const { user } = req;
+    const { limit = 20, page = 1, favorite=false} = req.query;
     const skip = (page - 1) * limit;
-    const myContacts = await Contacts.find({ owner: user._id })
-        .populate("owner", { _id: 1, name: 1 })
-        .skip(skip)
-        .limit(limit);
-    return res.json(myContacts);
+    let myContacts;
+    if (favorite === false) {
+        myContacts = await Contacts.find({ owner: user._id})
+            .populate("owner", { _id: 1, name: 1 })
+            .skip(skip)
+            .limit(limit);
+        return res.json(myContacts);
+    }
+        myContacts = await Contacts.find({
+            owner: user._id,
+            favorite: true,
+        })
+            .populate("owner", { _id: 1, name: 1 })
+            .skip(skip)
+            .limit(limit);
+        return res.json(myContacts);
 }
 
 async function currentUser(req, res, next) {
     const { user } = req;
-    return res.status(200).json({ data: { user } });
+    if (!user) {
+        throw new HttpError(401, "Not authorized");
+    }
+    return res.status(200).json({
+        data: {
+            user: {
+                email: user.email,
+                subscription: user.subscription,
+            },
+        },
+    });
+}
+
+async function updateUserSubscription(req, res, next) {
+
+    const { user } = req;
+    if (!user) {
+        throw new HttpError(401, "Not authorized");
+    }
+    // console.log("user", user._id);
+    // const trueContact = await User.findById(user._id);
+    // if (!trueContact) {
+    //     return next(new HttpError(404, "user not found"));
+    // }
+    // console.log("trueContact", trueContact);
+
+    const { subscription  } = req.body;
+    // if (subscription !== "starter") {
+    //     return console.log("non");
+    // }
+    const updatedContact = await User.findByIdAndUpdate(
+        { _id: user._id },
+        { subscription},
+        { new: true }
+    );
+    // const updatedContact = await User.findById(trueContact._id);
+
+    return res.status(200).json({
+        data: {
+            user: {
+                email: updatedContact.email,
+                subscription: updatedContact.subscription,
+            },
+        },
+    });
 }
 
 module.exports = {
     register,
     login,
+    logout,
     createContact,
     getCurrentUserContacts,
     currentUser,
+    updateUserSubscription,
 };

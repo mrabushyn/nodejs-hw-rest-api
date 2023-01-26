@@ -4,9 +4,11 @@ const userRouter = express.Router();
 const {
     register,
     login,
+    logout,
     createContact,
     getCurrentUserContacts,
     currentUser,
+    updateUserSubscription,
 } = require("../../controllers/user.controller");
 const { auth, validateBody } = require("../../middlewares/index");
 const { addContactSchema } = require("../../schema/schemaContacts");
@@ -18,16 +20,24 @@ userRouter.post(
     validateBody(addUserSchema),
     tryCatchWrapper(register)
 );
+userRouter.post("/login", validateBody(addUserSchema), tryCatchWrapper(login));
 userRouter.post(
-    "/login",
-    validateBody(addUserSchema),
-    tryCatchWrapper(login)
+    "/logout",
+    tryCatchWrapper(auth),
+    // validateBody(addUserSchema),
+    tryCatchWrapper(logout)
 );
 userRouter.post(
     "/contacts",
     tryCatchWrapper(auth),
     validateBody(addContactSchema),
     tryCatchWrapper(createContact)
+);
+userRouter.patch(
+    "/",
+    tryCatchWrapper(auth),
+    validateBody(addUserSchema),
+    tryCatchWrapper(updateUserSubscription)
 );
 userRouter.get(
     "/contacts",

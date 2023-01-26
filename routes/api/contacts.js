@@ -21,19 +21,27 @@ contactsRouter.get(
     tryCatchWrapper(auth), 
     tryCatchWrapper(getContacts));
 contactsRouter.get(
-    "/:contactId", 
-    tryCatchWrapper(getContact));
+    "/:contactId",
+    tryCatchWrapper(auth),
+    tryCatchWrapper(getContact)
+);
 contactsRouter.put(
     "/:contactId",
+    tryCatchWrapper(auth),
     validateBody(updateContactSchema),
     tryCatchWrapper(changeContact)
 );
 contactsRouter.patch(
     "/:contactId/favorite",
+    tryCatchWrapper(auth),
     validateBody(updateStatusSchema),
     tryCatchWrapper(updateStatusContact)
 );
 
-contactsRouter.delete("/:contactId", tryCatchWrapper(delContact));
+contactsRouter.delete(
+    "/:contactId",
+    tryCatchWrapper(auth),
+    tryCatchWrapper(delContact)
+);
 
 module.exports = contactsRouter;

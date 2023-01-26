@@ -18,11 +18,11 @@ async function auth(req, res, next) {
     const [type, token] = authHeaders.split(" ");
 
     if (type !== "Bearer") {
-        throw new HttpError(401, "token type is not valid");
+        throw new HttpError(401, "Not authorized");
     }
 
     if (!token) {
-        throw new HttpError(401, "no token provided");
+        throw new HttpError(401, "Not authorized");
     }
 
     try {
@@ -34,7 +34,7 @@ async function auth(req, res, next) {
             error.name === "TokenExpiredError" ||
             error.name === "JsonWebTokenError"
         ) {
-            throw new HttpError(401, "jwt token is not valid");
+            throw new HttpError(401, "Not authorized");
         }
         throw error;
     }

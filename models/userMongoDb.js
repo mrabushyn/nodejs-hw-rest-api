@@ -15,6 +15,7 @@ const userSchema = mongoose.Schema(
         },
         subscription: {
             type: String,
+            required: true,
             enum: ["starter", "pro", "business"],
             default: "starter",
         },
