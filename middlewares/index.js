@@ -14,7 +14,6 @@ function validateBody(schema) {
 
 async function auth(req, res, next) {
     const authHeaders = req.headers.authorization || "";
-    // console.log("req.heders:", authHeaders);
     const [type, token] = authHeaders.split(" ");
 
     if (type !== "Bearer") {

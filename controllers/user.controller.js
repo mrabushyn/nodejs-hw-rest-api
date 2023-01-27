@@ -41,9 +41,6 @@ async function login(req, res, next) {
     if (!storedUser) {
         throw new HttpError(401, "Email or password is wrong");
     }
-    // if (!password) {
-    //     throw new HttpError(400, "password is require");
-    // }
     const isPasswordValid = await bcrypt.compare(password, storedUser.password);
     if (!isPasswordValid) {
         throw new HttpError(401, "Email or password is wrong");
@@ -69,11 +66,6 @@ async function logout(req, res, next) {
         throw new HttpError(401, "Not authorized");
     }
     req.headers.authorization = "";
-    //     let authHeaders = req.headers.authorization;
-    //     if (authHeaders === "") {
-    //         throw new HttpError(401, "Not authorized");
-    //     }
-    // authHeaders = ""
     return res.status(204).json({});
 }
 
@@ -90,37 +82,26 @@ async function createContact(req, res, next) {
     return res.status(201).json(newContact);
 }
 
-// async function getCurrentUserContacts(req, res, next) {
-//     const { limit = 20, page = 1 } = req.query;
-//     const { user } = req;
-//     const skip = (page - 1) * limit;
-//     const myContacts = await Contacts.find({ owner: user._id })
-//         .populate("owner", { _id: 1, name: 1 })
-//         .skip(skip)
-//         .limit(limit);
-//     return res.json(myContacts);
-// }
-
 async function getCurrentUserContacts(req, res, next) {
     const { user } = req;
-    const { limit = 20, page = 1, favorite=false} = req.query;
+    const { limit = 20, page = 1, favorite = false } = req.query;
     const skip = (page - 1) * limit;
     let myContacts;
     if (favorite === false) {
-        myContacts = await Contacts.find({ owner: user._id})
+        myContacts = await Contacts.find({ owner: user._id })
             .populate("owner", { _id: 1, name: 1 })
             .skip(skip)
             .limit(limit);
         return res.json(myContacts);
     }
-        myContacts = await Contacts.find({
-            owner: user._id,
-            favorite: true,
-        })
-            .populate("owner", { _id: 1, name: 1 })
-            .skip(skip)
-            .limit(limit);
-        return res.json(myContacts);
+    myContacts = await Contacts.find({
+        owner: user._id,
+        favorite: true,
+    })
+        .populate("owner", { _id: 1, name: 1 })
+        .skip(skip)
+        .limit(limit);
+    return res.json(myContacts);
 }
 
 async function currentUser(req, res, next) {
@@ -139,29 +120,22 @@ async function currentUser(req, res, next) {
 }
 
 async function updateUserSubscription(req, res, next) {
-
     const { user } = req;
     if (!user) {
         throw new HttpError(401, "Not authorized");
     }
-    // console.log("user", user._id);
-    // const trueContact = await User.findById(user._id);
-    // if (!trueContact) {
-    //     return next(new HttpError(404, "user not found"));
-    // }
-    // console.log("trueContact", trueContact);
-
-    const { subscription  } = req.body;
-    // if (subscription !== "starter") {
-    //     return console.log("non");
-    // }
+    const { subscription } = req.body;
+    if (!subscription) {
+        throw new HttpError(
+            401,
+            `Сhoose a subscription ('starter', 'pro' or 'business'). Now your subscription is - "${user.subscription}"`
+        );
+    }
     const updatedContact = await User.findByIdAndUpdate(
         { _id: user._id },
-        { subscription},
+        { subscription },
         { new: true }
     );
-    // const updatedContact = await User.findById(trueContact._id);
-
     return res.status(200).json({
         data: {
             user: {

@@ -24,7 +24,6 @@ userRouter.post("/login", validateBody(addUserSchema), tryCatchWrapper(login));
 userRouter.post(
     "/logout",
     tryCatchWrapper(auth),
-    // validateBody(addUserSchema),
     tryCatchWrapper(logout)
 );
 userRouter.post(
