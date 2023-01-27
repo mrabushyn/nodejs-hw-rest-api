@@ -49,12 +49,10 @@ async function login(req, res, next) {
         expiresIn: "5h",
     });
     return res.status(200).json({
-        data: {
-            token,
-            user: {
-                email: storedUser.email,
-                subscription: storedUser.subscription,
-            },
+        token,
+        user: {
+            email: storedUser.email,
+            subscription: storedUser.subscription,
         },
     });
 }
@@ -65,7 +63,6 @@ async function logout(req, res, next) {
     if (!storedUser) {
         throw new HttpError(401, "Not authorized");
     }
-    req.headers.authorization = "";
     return res.status(204).json({});
 }
 
@@ -84,20 +81,30 @@ async function createContact(req, res, next) {
 
 async function getCurrentUserContacts(req, res, next) {
     const { user } = req;
-    const { limit = 20, page = 1, favorite = false } = req.query;
+    const { limit = 20, page = 1, favorite } = req.query;
     const skip = (page - 1) * limit;
     let myContacts;
-    if (favorite === false) {
-        myContacts = await Contacts.find({ owner: user._id })
+    if (favorite === "false") {
+        myContacts = await Contacts.find({
+            owner: user._id,
+            favorite: false,
+        })
             .populate("owner", { _id: 1, name: 1 })
             .skip(skip)
             .limit(limit);
         return res.json(myContacts);
     }
-    myContacts = await Contacts.find({
-        owner: user._id,
-        favorite: true,
-    })
+    if (favorite === "true") {
+        myContacts = await Contacts.find({
+            owner: user._id,
+            favorite:true,
+        })
+            .populate("owner", { _id: 1, name: 1 })
+            .skip(skip)
+            .limit(limit);
+        return res.json(myContacts);
+    }
+    myContacts = await Contacts.find({ owner: user._id })
         .populate("owner", { _id: 1, name: 1 })
         .skip(skip)
         .limit(limit);
@@ -110,12 +117,8 @@ async function currentUser(req, res, next) {
         throw new HttpError(401, "Not authorized");
     }
     return res.status(200).json({
-        data: {
-            user: {
-                email: user.email,
-                subscription: user.subscription,
-            },
-        },
+        email: user.email,
+        subscription: user.subscription,
     });
 }
 
@@ -137,12 +140,8 @@ async function updateUserSubscription(req, res, next) {
         { new: true }
     );
     return res.status(200).json({
-        data: {
-            user: {
-                email: updatedContact.email,
-                subscription: updatedContact.subscription,
-            },
-        },
+        email: updatedContact.email,
+        subscription: updatedContact.subscription,
     });
 }
 
