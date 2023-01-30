@@ -48,6 +48,7 @@ async function login(req, res, next) {
     const token = jwt.sign({ id: storedUser._id }, JWT_SECRET, {
         expiresIn: "5h",
     });
+    await User.findByIdAndUpdate(storedUser._id, { storedUser: { token } });
     return res.status(200).json({
         token,
         user: {
@@ -63,6 +64,7 @@ async function logout(req, res, next) {
     if (!storedUser) {
         throw new HttpError(401, "Not authorized");
     }
+        storedUser.token = null;
     return res.status(204).json({});
 }
 
@@ -97,7 +99,7 @@ async function getCurrentUserContacts(req, res, next) {
     if (favorite === "true") {
         myContacts = await Contacts.find({
             owner: user._id,
-            favorite:true,
+            favorite: true,
         })
             .populate("owner", { _id: 1, name: 1 })
             .skip(skip)
