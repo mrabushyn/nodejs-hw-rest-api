@@ -20,9 +20,13 @@ const userSchema = mongoose.Schema(
             default: 'starter',
         },
         token: String,
+        // storedUser: {
+        //     type: String,
+            
+        // },
         avatarURL: {
             type: String,
-            default: ""
+            default: '',
         },
     },
     {

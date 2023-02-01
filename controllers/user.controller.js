@@ -2,6 +2,7 @@ const { Contacts } = require('../models/contactsMongoDb');
 const { User } = require('../models/userMongoDb');
 const { HttpError } = require('../helpers/index');
 const jwt = require('jsonwebtoken');
+const gravatar = require('gravatar');
 const path = require('path');
 const fs = require('fs/promises');
 const { JWT_SECRET } = process.env;
@@ -13,14 +14,18 @@ async function register(req, res, next) {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     try {
+        req.body.avatarURL = gravatar.url(email);
         const savedUser = await User.create({
             email,
             password: hashedPassword,
+            avatarURL: req.body.avatarURL,
         });
+        // console.log(req.body.avatarURL);
         res.status(201).json({
             user: {
                 email: savedUser.email,
                 subscription: savedUser.subscription,
+                avatarURL: savedUser.avatarURL,
             },
         });
     } catch (error) {
@@ -43,10 +48,13 @@ async function login(req, res, next) {
     if (!isPasswordValid) {
         throw new HttpError(401, 'Email or password is wrong');
     }
+
     const token = jwt.sign({ id: storedUser._id }, JWT_SECRET, {
         expiresIn: '1d',
     });
-    await User.findByIdAndUpdate(storedUser._id, { storedUser: { token } });
+
+    await User.findByIdAndUpdate(storedUser._id, { token: token }, { new: true });
+    console.log(storedUser.token);
     return res.status(200).json({
         token,
         user: {
@@ -62,7 +70,7 @@ async function logout(req, res, next) {
     if (!storedUser) {
         throw new HttpError(401, 'Not authorized');
     }
-    storedUser.token = null;
+    await User.findByIdAndUpdate(storedUser._id, { token: "" }, { new: true });
     return res.status(204).json({});
 }
 
@@ -146,7 +154,6 @@ async function uploadAvatar(req, res, next) {
     const { user } = req;
     const avatarIdName = user._id + '_' + originalname;
 
-    // const [userId] = avatarName.split('_');
     console.log(req.file);
 
     const tmpPath = path.resolve(destination, filename);
@@ -155,12 +162,12 @@ async function uploadAvatar(req, res, next) {
         await fs.rename(tmpPath, publicPath);
     } catch (error) {
         await fs.unlink(tmpPath);
-        throw new HttpError(401, 'Not authorized');
+        throw new HttpError(400, 'Not authorized');
     }
-
-    const updatedUser = await User.findByIdAndUpdate(user._id, { avatarURL:  publicPath  }, {new:true});
-    return res.json({
-        ok: updatedUser.avatarURL,
+    const avatarPath = `avatars/${avatarIdName}`;
+    await User.findByIdAndUpdate(user._id, { avatarURL: avatarPath }, { new: true });
+    return res.status(200).json({
+        avatarURL: avatarPath,
     });
 }
 
