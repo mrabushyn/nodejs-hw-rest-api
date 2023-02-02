@@ -6,6 +6,7 @@ const gravatar = require('gravatar');
 const path = require('path');
 const fs = require('fs/promises');
 const { JWT_SECRET } = process.env;
+const Jimp = require('jimp');
 
 const bcrypt = require('bcrypt');
 
@@ -20,7 +21,6 @@ async function register(req, res, next) {
             password: hashedPassword,
             avatarURL: req.body.avatarURL,
         });
-        // console.log(req.body.avatarURL);
         res.status(201).json({
             user: {
                 email: savedUser.email,
@@ -70,7 +70,7 @@ async function logout(req, res, next) {
     if (!storedUser) {
         throw new HttpError(401, 'Not authorized');
     }
-    await User.findByIdAndUpdate(storedUser._id, { token: "" }, { new: true });
+    await User.findByIdAndUpdate(storedUser._id, { token: '' }, { new: true });
     return res.status(204).json({});
 }
 
@@ -139,7 +139,7 @@ async function updateUserSubscription(req, res, next) {
     if (!subscription) {
         throw new HttpError(
             401,
-            `Сhoose a subscription ('starter', 'pro' or 'business'). Now your subscription is - "${user.subscription}"`
+            `Choose a subscription ('starter', 'pro' or 'business'). Now your subscription is - "${user.subscription}"`
         );
     }
     const updatedContact = await User.findByIdAndUpdate({ _id: user._id }, { subscription }, { new: true });
@@ -153,36 +153,28 @@ async function uploadAvatar(req, res, next) {
     const { filename, destination, originalname } = req.file;
     const { user } = req;
     const avatarIdName = user._id + '_' + originalname;
-
-    console.log(req.file);
-
     const tmpPath = path.resolve(destination, filename);
     const publicPath = path.resolve(__dirname, '../public/avatars', avatarIdName);
+
     try {
-        await fs.rename(tmpPath, publicPath);
+    await Jimp.read(tmpPath)
+        .then(image => {
+            image.resize(250, 250);
+            image.quality(60);
+            image.write(publicPath); 
+        })
+        await fs.unlink(tmpPath);
     } catch (error) {
         await fs.unlink(tmpPath);
         throw new HttpError(400, 'Not authorized');
     }
+
     const avatarPath = `avatars/${avatarIdName}`;
     await User.findByIdAndUpdate(user._id, { avatarURL: avatarPath }, { new: true });
     return res.status(200).json({
         avatarURL: avatarPath,
     });
 }
-
-//   const { _id } = req.user;
-//   const { path } = req.file;
-//   req.body.avatarURL = gravatar.url(req.body.email);
-//   await updateAvatar(_id, req.body.avatarURL);
-//   try {
-//     await copyAvatar(req.file, req.body);
-//   } catch (error) {
-//     await fs.unlink(path);
-//     return next(error);
-//   }
-//   res.json({ avatarURL: req.body.avatarURL });
-// };
 
 module.exports = {
     register,
