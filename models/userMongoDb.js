@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema(
     {
@@ -24,6 +24,14 @@ const userSchema = mongoose.Schema(
             type: String,
             default: '',
         },
+        verify: {
+            type: Boolean,
+            default: false,
+        },
+        verificationToken: {
+            type: String,
+            required: [true, 'Verify token is required'],
+        },
     },
     {
         timestamps: true,
@@ -31,7 +39,7 @@ const userSchema = mongoose.Schema(
     }
 );
 
-const User = mongoose.model("user", userSchema);
+const User = mongoose.model('user', userSchema);
 
 module.exports = {
     User,

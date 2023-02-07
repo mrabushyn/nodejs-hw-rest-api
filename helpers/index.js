@@ -1,3 +1,7 @@
+const sgMail = require('@sendgrid/mail');
+
+const { SEND_GRID_KEY_NODE, EMAIL_FROM } = process.env;
+
 function tryCatchWrapper(endpointFn) {
     return async (req, res, next) => {
         try {
@@ -17,7 +21,18 @@ class HttpError extends Error {
     }
 }
 
+async function sendMail({ to, subject, text, html }) {
+    try {
+        sgMail.setApiKey(SEND_GRID_KEY_NODE);
+        const msg = { from: EMAIL_FROM, to, subject, html };
+        await sgMail.send(msg);
+    } catch (error) {
+        console.error('App error:', error);
+    }
+}
+
 module.exports = {
     tryCatchWrapper,
     HttpError,
+    sendMail,
 };
