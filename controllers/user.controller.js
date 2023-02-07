@@ -1,25 +1,32 @@
+const { JWT_SECRET } = process.env;
 const { Contacts } = require('../models/contactsMongoDb');
 const { User } = require('../models/userMongoDb');
-const { HttpError } = require('../helpers/index');
-const jwt = require('jsonwebtoken');
+const { HttpError, sendMail } = require('../helpers/index');
+const bcrypt = require('bcrypt');
 const gravatar = require('gravatar');
+const { v4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs/promises');
-const { JWT_SECRET } = process.env;
 const Jimp = require('jimp');
-
-const bcrypt = require('bcrypt');
 
 async function register(req, res, next) {
     const { email, password } = req.body;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
+    const verificationToken = v4();
     try {
         req.body.avatarURL = gravatar.url(email);
         const savedUser = await User.create({
             email,
             password: hashedPassword,
             avatarURL: req.body.avatarURL,
+            verificationToken,
+        });
+        await sendMail({
+            to: email,
+            subject: 'Please confirm your email',
+            html: `<button> <a href="localhost:3000/api/users/verify/${verificationToken}"> Confirm email</a> </button>`,
         });
         res.status(201).json({
             user: {
@@ -44,6 +51,9 @@ async function login(req, res, next) {
     if (!storedUser) {
         throw new HttpError(401, 'Email or password is wrong');
     }
+    if (!storedUser.verify) {
+        throw new HttpError(401, ' We send you a letter to confirm your email');
+    }
     const isPasswordValid = await bcrypt.compare(password, storedUser.password);
     if (!isPasswordValid) {
         throw new HttpError(401, 'Email or password is wrong');
@@ -54,7 +64,6 @@ async function login(req, res, next) {
     });
 
     await User.findByIdAndUpdate(storedUser._id, { token: token }, { new: true });
-    console.log(storedUser.token);
     return res.status(200).json({
         token,
         user: {
@@ -157,12 +166,11 @@ async function uploadAvatar(req, res, next) {
     const publicPath = path.resolve(__dirname, '../public/avatars', avatarIdName);
 
     try {
-    await Jimp.read(tmpPath)
-        .then(image => {
+        await Jimp.read(tmpPath).then(image => {
             image.resize(250, 250);
             image.quality(60);
-            image.write(publicPath); 
-        })
+            image.write(publicPath);
+        });
         await fs.unlink(tmpPath);
     } catch (error) {
         await fs.unlink(tmpPath);
@@ -176,6 +184,51 @@ async function uploadAvatar(req, res, next) {
     });
 }
 
+async function verifyEmail(req, res, next) {
+    const { verificationToken } = req.params;
+    const user = await User.findOne({ verificationToken });
+
+    if (!user) {
+        throw new HttpError(404, 'User not found');
+    }
+
+    await User.findByIdAndUpdate(user._id, {
+        verify: true,
+        verificationToken: null,
+    });
+    return res.status(200).json({ message: 'Verification successful' });
+}
+
+async function verify(req, res, next) {
+    const { email } = req.body;
+
+    if (!email || email === '') {
+        throw new HttpError(400, 'missing required field email');
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        throw new HttpError(404, 'Not found');
+    }
+
+    const verificationToken = v4();
+    const verifyUser = await User.findByIdAndUpdate(user._id, { verificationToken }, { new: true });
+
+    if (verifyUser.verify) {
+        throw new HttpError(400, 'Verification has already been passed');
+    }
+
+    if (!verifyUser.verify) {
+        await sendMail({
+            to: email,
+            subject: 'Please confirm your email',
+            html: `<button> <a href="localhost:3000/api/users/verify/${verificationToken}"> Confirm email</a> </button>`,
+        });
+        throw new HttpError(401, ' We send you a letter to confirm your email');
+    }
+}
+
 module.exports = {
     register,
     login,
@@ -185,4 +238,6 @@ module.exports = {
     currentUser,
     updateUserSubscription,
     uploadAvatar,
+    verifyEmail,
+    verify,
 };
